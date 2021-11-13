@@ -7,7 +7,7 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 const objectId = require('mongodb').ObjectId;
 
-// we-c9007-firebase-adminsdk-goagi-deda519b85.json
+
 
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
@@ -42,8 +42,8 @@ async function run() {
     const database = client.db("we-secure");
     const productsCollection=database.collection("products");
     const ordersCollection = database.collection("orders");
-    const contactsCollection = database.collection("contacts");
     const usersCollection = database.collection("users");
+    const reviewCollection = database.collection("review");
 
     // Get all the offers 
     app.get("/offers", async (req, res) => {
@@ -125,6 +125,17 @@ async function run() {
       res.json({res: ' '});
     })
 
+    // review
+  app.post("/addReview", async (req, res) => {
+    const result = await reviewCollection.insertOne(req.body);
+    res.send(result);
+  });
+
+  app.get("/addReview", async (req, res) => {
+    const review = await reviewCollection.find({});
+    const convertedOffers = await review.toArray();
+    res.json(convertedOffers);
+  });
      // admin check
 
      app.get("/users/:email", async (req, res) => {
@@ -137,19 +148,19 @@ async function run() {
       }
       res.json({ admin: isAdmin });
     });
-    app.get("/checkAdmin/:email", async (req, res) => {
-      const result = await usersCollection
-        .find({ email: req.params.email })
-        .toArray();
-      console.log(result);
-      res.send(result);
-    });
+
+
+    
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       console.log(result);
       res.json(result);
     });
+
+
+
     app.put("/users", async (req, res) => {
       const user = req.body;
       console.log(user);
@@ -163,6 +174,9 @@ async function run() {
       );
       res.json(result);
     });
+
+
+
     app.put("/users/admin",verifyToken, async (req, res) => {
       const user = req.body;
       console.log('decodedEmail',req.decodedEmail)
